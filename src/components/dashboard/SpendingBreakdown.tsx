@@ -40,7 +40,7 @@ export function SpendingBreakdown() {
       <div className="flex flex-col md:flex-row items-center gap-4">
         <div className="h-[200px] w-[200px] flex-shrink-0">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart className="text-inherit">
               <Pie
                 data={data}
                 cx="50%"

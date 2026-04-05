@@ -25,21 +25,6 @@ export interface Transaction {
 
 export type Role = "admin" | "viewer";
 
-const categories: { category: Category; type: TransactionType; range: [number, number] }[] = [
-  { category: "Salary", type: "income", range: [3000, 5500] },
-  { category: "Freelance", type: "income", range: [500, 2500] },
-  { category: "Investments", type: "income", range: [100, 1200] },
-  { category: "Food & Dining", type: "expense", range: [15, 120] },
-  { category: "Shopping", type: "expense", range: [20, 350] },
-  { category: "Transportation", type: "expense", range: [10, 80] },
-  { category: "Entertainment", type: "expense", range: [10, 100] },
-  { category: "Bills & Utilities", type: "expense", range: [50, 300] },
-  { category: "Healthcare", type: "expense", range: [30, 500] },
-  { category: "Education", type: "expense", range: [50, 400] },
-  { category: "Travel", type: "expense", range: [100, 800] },
-  { category: "Subscriptions", type: "expense", range: [5, 30] },
-];
-
 const descriptions: Record<Category, string[]> = {
   Salary: ["Monthly Salary", "Bonus Payment", "Overtime Pay"],
   Freelance: ["Web Design Project", "Consulting Fee", "Logo Design", "App Development"],
@@ -60,44 +45,126 @@ function seededRandom(seed: number) {
   return x - Math.floor(x);
 }
 
+// Target: ₹1,00,000 total income spread over 6 months
+// ~₹16,667/month average income
+// Expenses ~70-75% of income = ~₹70,000-75,000 total
 export function generateTransactions(): Transaction[] {
   const txns: Transaction[] = [];
   let id = 1;
 
-  for (let month = 0; month < 6; month++) {
-    // 1-2 income items per month
-    const incomeCount = 1 + Math.floor(seededRandom(month * 100) * 2);
-    for (let i = 0; i < incomeCount; i++) {
-      const cat = categories.filter((c) => c.type === "income")[Math.floor(seededRandom(month * 10 + i) * 3)];
+  // Fixed income distribution per month to hit exactly ₹1,00,000
+  const monthlyIncome: { month: number; items: { category: Category; amount: number; desc: string }[] }[] = [
+    {
+      month: 1,
+      items: [
+        { category: "Salary", amount: 12000, desc: "Monthly Salary" },
+        { category: "Freelance", amount: 5000, desc: "Web Design Project" },
+      ],
+    },
+    {
+      month: 2,
+      items: [
+        { category: "Salary", amount: 12000, desc: "Monthly Salary" },
+        { category: "Investments", amount: 3000, desc: "Stock Dividends" },
+      ],
+    },
+    {
+      month: 3,
+      items: [
+        { category: "Salary", amount: 12000, desc: "Monthly Salary" },
+        { category: "Freelance", amount: 6000, desc: "App Development" },
+        { category: "Investments", amount: 2000, desc: "Bond Interest" },
+      ],
+    },
+    {
+      month: 4,
+      items: [
+        { category: "Salary", amount: 12000, desc: "Monthly Salary" },
+        { category: "Freelance", amount: 4000, desc: "Consulting Fee" },
+      ],
+    },
+    {
+      month: 5,
+      items: [
+        { category: "Salary", amount: 12000, desc: "Monthly Salary" },
+        { category: "Salary", amount: 5000, desc: "Bonus Payment" },
+        { category: "Investments", amount: 3000, desc: "Rental Income" },
+      ],
+    },
+    {
+      month: 6,
+      items: [
+        { category: "Salary", amount: 12000, desc: "Monthly Salary" },
+      ],
+    },
+  ];
+  // Total: 12k*6 + 5k + 3k + 6k + 2k + 4k + 5k + 3k + 12k(m6 only salary) = wait let me recount
+  // M1: 17000, M2: 15000, M3: 20000, M4: 16000, M5: 20000, M6: 12000 = 100000 ✓
+
+  // Add income transactions
+  for (const mi of monthlyIncome) {
+    for (const item of mi.items) {
       const day = 1 + Math.floor(seededRandom(id * 7) * 27);
-      const amt = cat.range[0] + Math.floor(seededRandom(id * 13) * (cat.range[1] - cat.range[0]));
-      const descs = descriptions[cat.category];
       txns.push({
         id: `txn-${id++}`,
-        date: `2025-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-        description: descs[Math.floor(seededRandom(id) * descs.length)],
-        amount: amt,
-        category: cat.category,
+        date: `2025-${String(mi.month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+        description: item.desc,
+        amount: item.amount,
+        category: item.category,
         type: "income",
       });
     }
+  }
 
-    // 8-15 expense items per month
-    const expenseCount = 8 + Math.floor(seededRandom(month * 200 + 1) * 8);
-    for (let i = 0; i < expenseCount; i++) {
-      const expenseCats = categories.filter((c) => c.type === "expense");
-      const cat = expenseCats[Math.floor(seededRandom(month * 50 + i * 3) * expenseCats.length)];
-      const day = 1 + Math.floor(seededRandom(id * 11) * 27);
-      const amt = cat.range[0] + Math.floor(seededRandom(id * 17) * (cat.range[1] - cat.range[0]));
-      const descs = descriptions[cat.category];
-      txns.push({
-        id: `txn-${id++}`,
-        date: `2025-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-        description: descs[Math.floor(seededRandom(id * 3) * descs.length)],
-        amount: amt,
-        category: cat.category,
-        type: "expense",
-      });
+  // Expense budget per category (total ~₹72,000 across 6 months)
+  const expenseBudgets: { category: Category; monthlyRange: [number, number]; countRange: [number, number] }[] = [
+    { category: "Food & Dining", monthlyRange: [2000, 3500], countRange: [3, 5] },
+    { category: "Shopping", monthlyRange: [1000, 3000], countRange: [1, 3] },
+    { category: "Transportation", monthlyRange: [800, 1500], countRange: [2, 4] },
+    { category: "Entertainment", monthlyRange: [500, 1200], countRange: [1, 3] },
+    { category: "Bills & Utilities", monthlyRange: [3000, 4500], countRange: [3, 5] },
+    { category: "Healthcare", monthlyRange: [500, 1500], countRange: [1, 2] },
+    { category: "Education", monthlyRange: [500, 1500], countRange: [1, 2] },
+    { category: "Travel", monthlyRange: [0, 2000], countRange: [0, 1] },
+    { category: "Subscriptions", monthlyRange: [300, 600], countRange: [2, 4] },
+  ];
+
+  for (let month = 1; month <= 6; month++) {
+    for (const budget of expenseBudgets) {
+      const seed = month * 100 + expenseBudgets.indexOf(budget) * 13;
+      const monthlyTotal = budget.monthlyRange[0] +
+        Math.floor(seededRandom(seed) * (budget.monthlyRange[1] - budget.monthlyRange[0]));
+
+      if (monthlyTotal === 0) continue;
+
+      const count = budget.countRange[0] +
+        Math.floor(seededRandom(seed + 1) * (budget.countRange[1] - budget.countRange[0] + 1));
+
+      if (count === 0) continue;
+
+      // Split monthly total into `count` transactions
+      let remaining = monthlyTotal;
+      const descs = descriptions[budget.category];
+
+      for (let i = 0; i < count; i++) {
+        const isLast = i === count - 1;
+        const amt = isLast
+          ? remaining
+          : Math.max(50, Math.floor(remaining / (count - i) * (0.5 + seededRandom(id * 17))));
+        remaining -= amt;
+        if (remaining < 0) remaining = 0;
+
+        const day = 1 + Math.floor(seededRandom(id * 11) * 27);
+        txns.push({
+          id: `txn-${id++}`,
+          date: `2025-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+          description: descs[Math.floor(seededRandom(id * 3) * descs.length)],
+          amount: amt,
+          category: budget.category,
+          type: "expense",
+        });
+        id++;
+      }
     }
   }
 

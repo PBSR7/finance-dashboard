@@ -7,6 +7,8 @@ interface Filters {
   category: string;
   sortBy: "date" | "amount";
   sortDir: "asc" | "desc";
+  dateFrom: Date | undefined;
+  dateTo: Date | undefined;
 }
 
 interface FinanceContextType {
@@ -45,6 +47,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     category: "all",
     sortBy: "date",
     sortDir: "desc",
+    dateFrom: undefined,
+    dateTo: undefined,
   });
 
   useEffect(() => {
@@ -65,6 +69,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     }
     if (filters.type !== "all") result = result.filter((t) => t.type === filters.type);
     if (filters.category !== "all") result = result.filter((t) => t.category === filters.category);
+    if (filters.dateFrom) {
+      const from = filters.dateFrom.toISOString().slice(0, 10);
+      result = result.filter((t) => t.date >= from);
+    }
+    if (filters.dateTo) {
+      const to = filters.dateTo.toISOString().slice(0, 10);
+      result = result.filter((t) => t.date <= to);
+    }
     result.sort((a, b) => {
       const mul = filters.sortDir === "asc" ? 1 : -1;
       if (filters.sortBy === "date") return mul * (new Date(a.date).getTime() - new Date(b.date).getTime());

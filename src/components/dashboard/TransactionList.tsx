@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, ArrowUpDown, Plus, Trash2, ArrowUp, ArrowDown, Download } from "lucide-react";
+import { Search, Plus, Trash2, ArrowUp, ArrowDown, Download } from "lucide-react";
 import { useFinance } from "@/contexts/FinanceContext";
-import { Category, Transaction } from "@/data/mockData";
+import { Category } from "@/data/mockData";
+import { formatCurrency } from "@/lib/currency";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
 
 const allCategories: Category[] = [
   "Salary", "Freelance", "Investments", "Food & Dining", "Shopping",
@@ -38,7 +40,7 @@ export function TransactionList() {
   };
 
   const exportCSV = () => {
-    const headers = "Date,Description,Category,Type,Amount\n";
+    const headers = "Date,Description,Category,Type,Amount (INR)\n";
     const rows = filteredTransactions.map((t) => `${t.date},"${t.description}",${t.category},${t.type},${t.amount}`).join("\n");
     const blob = new Blob([headers + rows], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -62,7 +64,7 @@ export function TransactionList() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="glass-card rounded-xl p-6"
+      className="glass-card rounded-xl p-4 sm:p-6"
     >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
         <h3 className="text-lg font-semibold">Transactions</h3>
@@ -79,7 +81,7 @@ export function TransactionList() {
                 <DialogHeader><DialogTitle>Add Transaction</DialogTitle></DialogHeader>
                 <div className="space-y-3 pt-2">
                   <div><Label>Description</Label><Input value={newTxn.description} onChange={(e) => setNewTxn((p) => ({ ...p, description: e.target.value }))} placeholder="e.g. Grocery Store" /></div>
-                  <div><Label>Amount</Label><Input type="number" value={newTxn.amount} onChange={(e) => setNewTxn((p) => ({ ...p, amount: e.target.value }))} placeholder="0.00" /></div>
+                  <div><Label>Amount (₹)</Label><Input type="number" value={newTxn.amount} onChange={(e) => setNewTxn((p) => ({ ...p, amount: e.target.value }))} placeholder="0" /></div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label>Type</Label>
@@ -109,31 +111,40 @@ export function TransactionList() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search transactions..."
-            className="pl-9 bg-secondary border-border"
-            value={filters.search}
-            onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+      <div className="flex flex-col gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search transactions..."
+              className="pl-9 bg-secondary border-border"
+              value={filters.search}
+              onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
+            />
+          </div>
+          <Select value={filters.type} onValueChange={(v) => setFilters((f) => ({ ...f, type: v as "all" | "income" | "expense" }))}>
+            <SelectTrigger className="w-full sm:w-[130px] bg-secondary border-border"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="income">Income</SelectItem>
+              <SelectItem value="expense">Expense</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filters.category} onValueChange={(v) => setFilters((f) => ({ ...f, category: v }))}>
+            <SelectTrigger className="w-full sm:w-[160px] bg-secondary border-border"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {allCategories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <DateRangeFilter
+            from={filters.dateFrom}
+            to={filters.dateTo}
+            onChange={(from, to) => setFilters((f) => ({ ...f, dateFrom: from, dateTo: to }))}
           />
         </div>
-        <Select value={filters.type} onValueChange={(v) => setFilters((f) => ({ ...f, type: v as "all" | "income" | "expense" }))}>
-          <SelectTrigger className="w-[130px] bg-secondary border-border"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="income">Income</SelectItem>
-            <SelectItem value="expense">Expense</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filters.category} onValueChange={(v) => setFilters((f) => ({ ...f, category: v }))}>
-          <SelectTrigger className="w-[160px] bg-secondary border-border"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {allCategories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Sort buttons */}
@@ -168,14 +179,14 @@ export function TransactionList() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{txn.description}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-muted-foreground">{new Date(txn.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-border">{txn.category}</Badge>
+                      <span className="text-xs text-muted-foreground">{new Date(txn.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-border hidden sm:inline-flex">{txn.category}</Badge>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm font-semibold ${txn.type === "income" ? "text-income" : "text-expense"}`}>
-                    {txn.type === "income" ? "+" : "-"}${txn.amount.toLocaleString()}
+                  <span className={`text-sm font-semibold tabular-nums ${txn.type === "income" ? "text-income" : "text-expense"}`}>
+                    {txn.type === "income" ? "+" : "-"}₹{txn.amount.toLocaleString("en-IN")}
                   </span>
                   {role === "admin" && (
                     <Button

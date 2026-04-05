@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useFinance } from "@/contexts/FinanceContext";
+import { formatCurrencyShort } from "@/lib/currency";
 
 export function IncomeExpenseChart() {
   const { transactions } = useFinance();
@@ -21,7 +22,6 @@ export function IncomeExpenseChart() {
         month: new Date(m + "-01").toLocaleString("en-US", { month: "short" }),
         Income: monthly[m].income,
         Expenses: monthly[m].expense,
-        Net: monthly[m].income - monthly[m].expense,
       }));
   }, [transactions]);
 
@@ -38,7 +38,7 @@ export function IncomeExpenseChart() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
-      className="glass-card card-hover rounded-xl p-6"
+      className="glass-card card-hover rounded-xl p-4 sm:p-6"
     >
       <h3 className="text-lg font-semibold mb-4">Income vs Expenses</h3>
       <div className="h-[260px]">
@@ -46,7 +46,7 @@ export function IncomeExpenseChart() {
           <BarChart data={data} barGap={4}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => formatCurrencyShort(v)} />
             <Tooltip
               contentStyle={{
                 backgroundColor: "hsl(var(--card))",
@@ -54,7 +54,7 @@ export function IncomeExpenseChart() {
                 borderRadius: "0.5rem",
                 color: "hsl(var(--foreground))",
               }}
-              formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
+              formatter={(value: number) => [`₹${value.toLocaleString("en-IN")}`, ""]}
             />
             <Legend wrapperStyle={{ color: "hsl(var(--foreground))", fontSize: 12 }} />
             <Bar dataKey="Income" fill="hsl(var(--income))" radius={[4, 4, 0, 0]} />

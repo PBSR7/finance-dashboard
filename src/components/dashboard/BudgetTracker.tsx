@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Target } from "lucide-react";
 import { useFinance } from "@/contexts/FinanceContext";
 import { Progress } from "@/components/ui/progress";
-import { CATEGORY_COLORS, Category } from "@/data/mockData";
+import { Category } from "@/data/mockData";
 
 const MONTHLY_BUDGETS: Partial<Record<Category, number>> = {
   "Food & Dining": 500,
@@ -21,10 +21,8 @@ export function BudgetTracker() {
   const { transactions } = useFinance();
 
   const data = useMemo(() => {
-    // Current month spending
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    // Fallback to latest month in data
     const months = [...new Set(transactions.map((t) => t.date.slice(0, 7)))].sort();
     const targetMonth = months.includes(currentMonth) ? currentMonth : months[months.length - 1] || currentMonth;
 
@@ -51,7 +49,7 @@ export function BudgetTracker() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.45 }}
-      className="glass-card card-hover rounded-xl p-6"
+      className="glass-card card-hover rounded-xl p-4 sm:p-6"
     >
       <div className="flex items-center gap-2 mb-4">
         <Target className="h-5 w-5 text-primary" />
@@ -67,9 +65,9 @@ export function BudgetTracker() {
             className="space-y-1.5"
           >
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground truncate">{item.category}</span>
-              <span className={`font-medium tabular-nums ${item.over ? "text-expense" : "text-foreground"}`}>
-                ${item.spent.toLocaleString()} / ${item.budget.toLocaleString()}
+              <span className="text-muted-foreground truncate text-xs sm:text-sm">{item.category}</span>
+              <span className={`font-medium tabular-nums text-xs sm:text-sm ${item.over ? "text-expense" : "text-foreground"}`}>
+                ₹{item.spent.toLocaleString("en-IN")} / ₹{item.budget.toLocaleString("en-IN")}
               </span>
             </div>
             <div className="relative">

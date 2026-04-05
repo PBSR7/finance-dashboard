@@ -6,15 +6,15 @@ import { Progress } from "@/components/ui/progress";
 import { Category } from "@/data/mockData";
 
 const MONTHLY_BUDGETS: Partial<Record<Category, number>> = {
-  "Food & Dining": 500,
-  Shopping: 400,
-  Transportation: 200,
-  Entertainment: 150,
-  "Bills & Utilities": 600,
-  Healthcare: 300,
-  Education: 250,
+  "Food & Dining": 3000,
+  Shopping: 2000,
+  Transportation: 1500,
+  Entertainment: 1000,
+  "Bills & Utilities": 4000,
+  Healthcare: 1200,
+  Education: 1000,
   Travel: 500,
-  Subscriptions: 60,
+  Subscriptions: 1000,
 };
 
 export function BudgetTracker() {

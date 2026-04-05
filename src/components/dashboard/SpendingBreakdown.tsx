@@ -34,7 +34,7 @@ export function SpendingBreakdown() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
-      className="glass-card card-hover rounded-xl p-6"
+      className="glass-card card-hover rounded-xl p-4 sm:p-6"
     >
       <h3 className="text-lg font-semibold mb-4">Spending Breakdown</h3>
       <div className="flex flex-col md:flex-row items-center gap-4">
@@ -62,7 +62,7 @@ export function SpendingBreakdown() {
                   borderRadius: "0.5rem",
                   color: "hsl(var(--foreground))",
                 }}
-                formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
+                formatter={(value: number) => [`₹${value.toLocaleString("en-IN")}`, ""]}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -78,7 +78,7 @@ export function SpendingBreakdown() {
                 <span className="text-muted-foreground truncate">{item.name}</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-medium">${item.value.toLocaleString()}</span>
+                <span className="font-medium tabular-nums">₹{item.value.toLocaleString("en-IN")}</span>
                 <span className="text-muted-foreground text-xs w-10 text-right">
                   {((item.value / total) * 100).toFixed(0)}%
                 </span>

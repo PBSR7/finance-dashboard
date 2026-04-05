@@ -9,7 +9,6 @@ export function InsightsPanel() {
   const insights = useMemo(() => {
     const result: { icon: typeof TrendingUp; title: string; value: string; color: string }[] = [];
 
-    // Highest spending category
     const byCategory: Record<string, number> = {};
     transactions
       .filter((t) => t.type === "expense")
@@ -21,12 +20,11 @@ export function InsightsPanel() {
       result.push({
         icon: TrendingUp,
         title: "Top Spending",
-        value: `${sorted[0][0]}: $${sorted[0][1].toLocaleString()}`,
+        value: `${sorted[0][0]}: ₹${sorted[0][1].toLocaleString("en-IN")}`,
         color: "text-expense",
       });
     }
 
-    // Monthly comparison
     const monthly: Record<string, number> = {};
     transactions
       .filter((t) => t.type === "expense")
@@ -47,7 +45,6 @@ export function InsightsPanel() {
       });
     }
 
-    // Savings insight
     const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
     result.push({
       icon: savingsRate < 20 ? AlertTriangle : Lightbulb,
@@ -56,13 +53,13 @@ export function InsightsPanel() {
       color: savingsRate < 10 ? "text-expense" : savingsRate < 20 ? "text-warning" : "text-income",
     });
 
-    // Avg transaction
     if (transactions.length > 0) {
-      const avgExpense = totalExpenses / transactions.filter((t) => t.type === "expense").length;
+      const expenseCount = transactions.filter((t) => t.type === "expense").length;
+      const avgExpense = expenseCount > 0 ? totalExpenses / expenseCount : 0;
       result.push({
         icon: Lightbulb,
         title: "Avg Expense",
-        value: `$${avgExpense.toFixed(0)} per transaction`,
+        value: `₹${avgExpense.toFixed(0)} per transaction`,
         color: "text-chart-2",
       });
     }
@@ -75,10 +72,10 @@ export function InsightsPanel() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
-      className="glass-card card-hover rounded-xl p-6"
+      className="glass-card card-hover rounded-xl p-4 sm:p-6"
     >
       <h3 className="text-lg font-semibold mb-4">Insights</h3>
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {insights.map((insight, i) => (
           <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
             <div className={`mt-0.5 ${insight.color}`}>
@@ -86,7 +83,7 @@ export function InsightsPanel() {
             </div>
             <div>
               <p className="text-sm font-medium">{insight.title}</p>
-              <p className="text-sm text-muted-foreground">{insight.value}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">{insight.value}</p>
             </div>
           </div>
         ))}

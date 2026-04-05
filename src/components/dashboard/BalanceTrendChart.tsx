@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import { useFinance } from "@/contexts/FinanceContext";
+import { formatCurrencyShort } from "@/lib/currency";
 
 export function BalanceTrendChart() {
   const { transactions } = useFinance();
@@ -42,7 +43,7 @@ export function BalanceTrendChart() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="glass-card card-hover rounded-xl p-6"
+      className="glass-card card-hover rounded-xl p-4 sm:p-6"
     >
       <h3 className="text-lg font-semibold mb-4">Balance Trend</h3>
       <div className="h-[260px]">
@@ -60,7 +61,7 @@ export function BalanceTrendChart() {
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => formatCurrencyShort(v)} />
             <Tooltip
               contentStyle={{
                 backgroundColor: "hsl(var(--card))",
@@ -68,7 +69,7 @@ export function BalanceTrendChart() {
                 borderRadius: "0.5rem",
                 color: "hsl(var(--foreground))",
               }}
-              formatter={(value: number) => [`$${value.toLocaleString()}`, ""]}
+              formatter={(value: number) => [`₹${value.toLocaleString("en-IN")}`, ""]}
             />
             <Area type="monotone" dataKey="balance" stroke="hsl(var(--primary))" fill="url(#balanceGrad)" strokeWidth={2} name="Balance" />
             <Area type="monotone" dataKey="income" stroke="hsl(var(--income))" fill="url(#incomeGrad)" strokeWidth={1.5} strokeDasharray="5 5" name="Income" />

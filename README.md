@@ -2,6 +2,9 @@
 
 A modern and interactive **Finance Dashboard UI** built to help users track, analyze, and understand their financial activity. This project focuses on clean design, intuitive user experience, and efficient state management on the frontend.
 
+## Live Demo
+https://finance-dashboard-gray-alpha.vercel.app/
+
 ## Project Objective
 
 The goal of this project is to demonstrate frontend development skills by building a **responsive and visually appealing dashboard** that:

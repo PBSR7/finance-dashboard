@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { LayoutDashboard } from "lucide-react";
 import { RoleToggle } from "@/components/dashboard/RoleToggle";
+import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
 
 export function DashboardHeader() {
   return (
@@ -18,7 +19,10 @@ export function DashboardHeader() {
           <p className="text-sm text-muted-foreground">Track your financial activity at a glance</p>
         </div>
       </div>
-      <RoleToggle />
+      <div className="flex items-center gap-3">
+        <ThemeToggle />
+        <RoleToggle />
+      </div>
     </motion.header>
   );
 }
